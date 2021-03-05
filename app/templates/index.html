@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html >
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Create Users in AD Gmail and Okta</title>
+    <link rel="stylesheet" href="static/css/bootstrap.min.css">
+    <script src="static/js/jquery-3.1.1.min.js"></script>
+    <script src="static/js/moment.min.js"></script>
+  </head>
+
+  <body>
+
+    <div style="position:absolute; left:5%; top:50px; width: 1500px">
+        <form >
+          <div class="row">
+              <div class="col-xs-3">
+                <label for="info">Input data:</label>
+                <textarea class="form-control" rows="15" id='info' style="width: 350px"></textarea>
+              </div>
+              <div class="col-xs-5">
+                <label for="output">Output:</label>
+                <textarea class="form-control" rows="15" id='output' style="width: 600px" readonly></textarea>
+              </div>
+              <div class="col-xs-4">
+                <label for="log">History Log:</label>
+                <textarea class="form-control" rows="15" id='log' style="width: 500px" readonly></textarea>
+              </div>
+          </div>
+        </form>
+        <div>
+          <div style="margin-top: 2%; margin-bottom: 2%">
+            <a href="#" class="btn btn-success btn-lg" id="check" >Check data</a>
+            <a href="#" class="btn btn-success btn-lg" id="hist-log" >History</a>
+          </div>
+          <button type="button" class="btn btn-danger btn-lg" id="ad">AD</button>
+          <button type="button" class="btn btn-danger btn-lg" id="gmail">Gmail</button>
+          <button type="button" class="btn btn-danger btn-lg" id="okta">Okta</button>
+        </div>
+    </div>
+
+        <script type="text/javascript">
+          $( document ).ready(function() {
+
+            $("#check").on('click', function(){
+                var send_data;
+                send_data = $("#info").val();
+                $.post( "/check", send_data, function(data) {
+                    $( "#output" ).html(data);
+                });
+            });
+
+
+            $("#hist-log").on('click', function(){
+                $.get( "/log", function(data) {
+                    $( "#log" ).html(data);
+                });
+            });
+
+
+            $("#gmail").on('click', function(){
+                var send_data;
+                send_data = $("#info").val();
+                $.post( "/gmail", send_data, function(data) {
+                    data = "\n\nGmail results:\n" + data;
+                    $( "#output" ).append(data);
+                });
+            });
+
+
+            $("#okta").on('click', function(){
+                var send_data;
+                send_data = $("#info").val();
+                $.post( "/okta", send_data, function(data) {
+                    data = "\n\nOkta results:\n" + data;
+                    $( "#output" ).append(data);
+                });
+            });
+
+            $("#ad").on('click', function(){
+                var send_data;
+                send_data = $("#info").val();
+                $.post( "/ad", send_data, function(data) {
+                    data = "\n\nAD results:\n" + data;
+                    $( "#output" ).append(data);
+                });
+            });
+
+
+          });
+        </script>
+  </body>
+</html>

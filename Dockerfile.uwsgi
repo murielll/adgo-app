@@ -1,0 +1,29 @@
+# ADGO-UCT = AD Gmail Okta users creation tool
+
+FROM python:3.8-alpine
+
+RUN apk add --update --no-cache openldap-dev gcc linux-headers build-base
+
+RUN pip install uwsgi
+
+RUN mkdir -p /app/log
+
+WORKDIR /app
+
+COPY ./app/requirements.txt /app/
+
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY ./app/static /app/static
+
+COPY ./app/templates /app/templates
+
+COPY ./app/run.py \
+     ./app/settings.py \
+     ./app/wsgi.py \
+     ./app/utils.py \
+     /app/
+
+CMD ["uwsgi", "--socket", "0.0.0.0:3000", \
+              "--wsgi-file", "/app/wsgi.py", \
+              "--callable", "app"]

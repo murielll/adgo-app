@@ -1,0 +1,44 @@
+# ADGO-UCT = AD Gmail Okta users creation tool
+
+FROM alpine:latest
+
+RUN apk add --update --no-cache \
+    nginx \
+    python3 \
+    python3-dev \
+    openldap-dev \
+    py3-pip \
+    gcc \
+    build-base \
+    linux-headers && pip3 install uwsgi
+
+RUN mkdir /run/nginx && \
+    mkdir -p /app/log
+
+WORKDIR /app
+
+COPY ./app/requirements.txt /app/
+
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+COPY ./app/static /app/static
+
+COPY ./app/templates /app/templates
+
+COPY ./app/run.py \
+     ./app/settings.py \
+     ./app/wsgi.py \
+     ./app/utils.py \
+     /app/
+
+COPY ./deploy/nginx-app.conf /etc/nginx/conf.d/default.conf
+
+COPY ./deploy/uwsgi.ini /app/uwsgi.ini
+
+COPY ./deploy/entrypoint.sh /entrypoint.sh
+
+RUN chmod +x /entrypoint.sh
+
+EXPOSE 80
+
+ENTRYPOINT ["/entrypoint.sh"]
