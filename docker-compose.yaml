@@ -6,6 +6,7 @@ services:
     volumes:
       - logs-vol:/app/log
       - static-files-vol:/app/static
+      - ${PWD}/credentials.json:/app/credentials.json
     env_file:
       - env
     expose:
