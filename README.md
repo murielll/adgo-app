@@ -79,8 +79,9 @@ After this gmail api lib generate file ```token.pickle``` and save it in conatin
 
 
 ## Usage
-To create users you should copy info about users from your data source and paste in form ***Input data:***.
-Allowed data formats:
+To create users you should copy info about users from your data source and paste in form ***Input data***.
+
+Allowed data formats are:
 
 ```
 name - Name1 Lastname1
