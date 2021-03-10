@@ -2,3 +2,4 @@ tmp/
 app/py3.8/
 __pycache__
 app/log/app.log
+env
