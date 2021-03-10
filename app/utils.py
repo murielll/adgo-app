@@ -43,6 +43,11 @@ def users_list_gen(data):
 
 def write_to_log(email, event):
     """ Writes events to log file """
+
+    if not os.path.exists(settings.LOG_FILE):
+        with open(settings.LOG_FILE, 'w'):
+            pass
+
     with open(LOG_FILE, 'a+') as f:
         record = email + ', ' + event
         if record not in f.read():
