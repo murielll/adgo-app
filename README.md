@@ -2,6 +2,13 @@
 
 Create users in all systems in 1 click.
 
+## Purpose
+
+This project has 3 purposes:
+1. practical - it can help to decrease time of users creation.
+2. demo - from this project you can see what skills have author.
+3. educational - author learn technologies through the development.
+
 ## System requirements
 
 RAM: 256Mb
