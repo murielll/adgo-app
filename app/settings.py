@@ -1,3 +1,4 @@
+""" Application settings module """
 from decouple import config
 
 

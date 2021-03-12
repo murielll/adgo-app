@@ -1,3 +1,4 @@
+""" Unit tests for app """
 import datetime
 import pytest
 import run
@@ -6,20 +7,21 @@ from utils import users_list_gen, write_to_log
 
 
 @pytest.fixture
-def client():
+def client_fixture():
+    """ Create a pytest fixture called client() """
     run.app.config['TESTING'] = True
     with run.app.test_client() as client:
         yield client
 
 
-def test_root_url(client):
+def test_root_url(client_fixture):
     """Test / url."""
 
-    rv = client.get('/')
-    assert b'<title>Create Users in AD Gmail and Okta</title>' in rv.data
+    req = client_fixture.get('/')
+    assert b'<title>Create Users in AD Gmail and Okta</title>' in req.data
 
 
-def test_check_url(client):
+def test_check_url(client_fixture):
     """Test /check url."""
 
     user_test = '%s - Name1 Lastname1\n' \
@@ -30,17 +32,17 @@ def test_check_url(client):
     email_test_1 = "name1.lastname1@" + GMAIL_DOMAIN
     email_test_2 = "name2.lastname2@" + GMAIL_DOMAIN
 
-    rv = client.post('/check', data=user_test)
-    assert email_test_1.encode() in rv.data
-    assert email_test_2.encode() in rv.data
+    req = client_fixture.post('/check', data=user_test)
+    assert email_test_1.encode() in req.data
+    assert email_test_2.encode() in req.data
 
 
-def test_log_url(client):
+def test_log_url(client_fixture):
     """Test /log url."""
 
-    rv = client.get('/log')
-    assert (b'No historical data!' in rv.data or
-            b'--' in rv.data)
+    req = client_fixture.get('/log')
+    assert (b'No historical data!' in req.data or
+            b'--' in req.data)
 
 
 def test_users_list_gen_func():

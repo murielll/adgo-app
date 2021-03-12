@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+""" Some service functions for ADGO app """
 import os
 import json
 import datetime
@@ -17,17 +18,17 @@ def users_list_gen(data):
                        .replace('-', '', 1)\
                        .replace(':', '')\
                        .strip()
-            firstName = name.split()[0].strip()
-            lastName = name.split()[1].strip()
+            first_name = name.split()[0].strip()
+            last_name = name.split()[1].strip()
 
-            email = (firstName.lower() + '.' + lastName.lower() + '@' +
+            email = (first_name.lower() + '.' + last_name.lower() + '@' +
                      GMAIL_DOMAIN)
 
             user = {
-                "firstName": firstName,
-                "lastName": lastName,
-                "fullName": lastName + ' ' + firstName,
-                "adName": firstName[0].lower() + '.' + lastName.lower(),
+                "firstName": first_name,
+                "lastName": last_name,
+                "fullName": last_name + ' ' + first_name,
+                "adName": first_name[0].lower() + '.' + last_name.lower(),
                 "email": email
             }
             continue
@@ -49,15 +50,16 @@ def write_to_log(email, event):
         with open(LOG_FILE, 'w'):
             pass
 
-    with open(LOG_FILE, 'a+') as f:
+    with open(LOG_FILE, 'a+') as log_file:
         record = email + ', ' + event
-        if record not in f.read():
+        if record not in log_file.read():
             today = datetime.date.today().strftime('%d-%m-%Y')
             log_str = '[' + today + '] -- ' + record + '\n'
-            f.write(log_str)
+            log_file.write(log_str)
 
 
 def get_err_msg(err):
+    """ Get error message from LDAP lib Exception message """
     err = err.__str__() \
              .replace("\'", "\"") \
              .replace('\"\\n', '') \

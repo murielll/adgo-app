@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
+""" This is main flask app module """
 import os
 import json
 import pickle
 import ldap
-import settings
 from ldap import modlist
 from requests import post
 from flask import Flask, request, render_template
@@ -11,15 +11,15 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
+import settings
 from utils import users_list_gen, write_to_log, get_err_msg
 
 # ####################### Get all LDAP exceptions #############################
 ldap_exception_list = list()
-for i in ldap.__dir__():
-    obj = eval('ldap.%s' % i)
-    if type(obj) == type:
-        if issubclass(obj, Exception):
-            ldap_exception_list.append(obj)
+for i in dir(ldap):
+    obj = getattr(ldap, i)
+    if isinstance(obj, type) and issubclass(obj, Exception):
+        ldap_exception_list.append(obj)
 
 ldap_exception_tuple = tuple(ldap_exception_list)
 del ldap_exception_list
@@ -30,11 +30,13 @@ app = Flask(__name__)
 
 @app.route('/', methods=['GET'])
 def index():
+    """ View for / route """
     return render_template('index.html')
 
 
 @app.route('/check', methods=['POST'])
 def check_info():
+    """ View for checking if input data is correct """
     data = request.get_data()
     users = users_list_gen(data)
 
@@ -43,12 +45,12 @@ def check_info():
                .join([
                 'Email: ' + user['email'] + '    '
                 'AD: ' + user['adName'] for user in users])
-    else:
-        return 'No users to create!'
+    return 'No users to create!'
 
 
 @app.route('/log', methods=['GET'])
 def hist_log():
+    """ View for show log """
     if not os.path.exists(settings.LOG_FILE):
         with open(settings.LOG_FILE, 'w'):
             pass
@@ -56,12 +58,12 @@ def hist_log():
         log_data = log.read()
         if '--' not in log_data:  # check if log has a historical data
             return 'No historical data!'
-        else:
-            return log_data
+        return log_data
 
 
 @app.route('/okta', methods=['POST'])
 def okta():
+    """ View for user creation in Okta """
     result = list()
     data = request.get_data()
     users = users_list_gen(data)
@@ -102,6 +104,7 @@ def okta():
 
 @app.route('/gmail', methods=['POST'])
 def gmail():
+    """ View for user creation in Gmail """
     result = list()
     data = request.get_data()
     users = users_list_gen(data)
@@ -109,7 +112,7 @@ def gmail():
     if not users:
         return 'No users to create!'
 
-    SCOPES = ['https://www.googleapis.com/auth/admin.directory.user',
+    scopes = ['https://www.googleapis.com/auth/admin.directory.user',
               'https://www.googleapis.com/auth/admin.directory.group']
     creds = None
 
@@ -122,7 +125,7 @@ def gmail():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                settings.GMAIL_CREDENTIALS, SCOPES)
+                settings.GMAIL_CREDENTIALS, scopes)
             creds = flow.run_local_server(port=0)
 
         with open('token.pickle', 'wb') as token:
@@ -170,8 +173,10 @@ def gmail():
 
 
 @app.route('/ad', methods=['POST'])
-def ad():
+def active_directory():
     """
+    View for user creation in Active Directory
+
     Useful info about python ldap lib
     http://marcitland.blogspot.com/2011/02/python-active-directory-linux.html
 
@@ -186,16 +191,16 @@ def ad():
 
     ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
 
-    ad = ldap.initialize(settings.AD_SERVER)
+    ad_srv = ldap.initialize(settings.AD_SERVER)
 
-    ad.set_option(ldap.OPT_REFERRALS, 0)
-    ad.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
-    ad.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
-    ad.set_option(ldap.OPT_X_TLS_DEMAND, True)
-    ad.set_option(ldap.OPT_DEBUG_LEVEL, 255)
+    ad_srv.set_option(ldap.OPT_REFERRALS, 0)
+    ad_srv.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
+    ad_srv.set_option(ldap.OPT_X_TLS, ldap.OPT_X_TLS_DEMAND)
+    ad_srv.set_option(ldap.OPT_X_TLS_DEMAND, True)
+    ad_srv.set_option(ldap.OPT_DEBUG_LEVEL, 255)
 
-    ad.start_tls_s()
-    ad.simple_bind_s(settings.AD_BIND_DN, settings.AD_ADMIN_PASS)
+    ad_srv.start_tls_s()
+    ad_srv.simple_bind_s(settings.AD_BIND_DN, settings.AD_ADMIN_PASS)
 
     for user in users:
 
@@ -219,7 +224,7 @@ def ad():
         # add user
         user_ldif = modlist.addModlist(user_attrs)
         try:
-            ad.add_s(user_dn, user_ldif)
+            ad_srv.add_s(user_dn, user_ldif)
             result.append('%s: User succefully created.' % user['adName'])
             write_to_log(user['email'], 'AD')
         except ldap_exception_tuple as err:
@@ -234,7 +239,7 @@ def ad():
         password_value = unicode_pass.encode('utf-16-le')
         add_pass = [(ldap.MOD_REPLACE, 'unicodePwd', [password_value])]
         try:
-            ad.modify_s(user_dn, add_pass)
+            ad_srv.modify_s(user_dn, add_pass)
             result.append(
               '%s: Password has changed succefully.' % user['adName']
             )
@@ -249,7 +254,7 @@ def ad():
         # enable user
         mod_acct = [(ldap.MOD_REPLACE, 'userAccountControl', b'512')]
         try:
-            ad.modify_s(user_dn, mod_acct)
+            ad_srv.modify_s(user_dn, mod_acct)
             result.append(
               '%s: user enabled succefully' % user['adName']
             )
@@ -265,7 +270,7 @@ def ad():
             add_member = [(ldap.MOD_ADD, 'member', str.encode(user_dn))]
 
             try:
-                ad.modify_s(settings.AD_GROUP_DN, add_member)
+                ad_srv.modify_s(settings.AD_GROUP_DN, add_member)
                 result.append(
                   '%s: User succefully added to group %s.'
                   % (user['adName'], settings.AD_GROUP_NAME)
@@ -278,6 +283,6 @@ def ad():
                 )
 
     # Disconnect from AD server
-    ad.unbind_s()
+    ad_srv.unbind_s()
 
     return '\n'.join(result)
