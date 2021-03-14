@@ -1,0 +1,104 @@
+---
+- name: Install Docker and requirements to DEV servers
+  hosts: adgo_dev
+  gather_facts: yes
+  remote_user: root
+  tasks:
+  - name: Install required system packages for Docker on Ubuntu
+    apt:
+      name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg', 'lsb-release', 'git']
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: Install required system packages for Docker on CentOS
+    yum:
+      name: ['yum-utils', 'git']
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'CentOS'
+
+  - name: Check if key file exists on Ubuntu
+    stat:
+      path: /usr/share/keyrings/docker-archive-keyring.gpg
+    register: key_file
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: Add gpg key for Docker repo
+    shell:
+      cmd: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    when:
+      - ansible_distribution == 'Ubuntu'
+      - key_file.stat.exists == False
+
+  - name: Add Docker repo on ubuntu
+    shell:
+      cmd: >
+        echo
+        "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu
+        $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: Add docker repo on CentOS
+    command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+    when: ansible_distribution == 'CentOS'
+
+  - name: Install Docker on Ubuntu
+    apt:
+      name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'Ubuntu'
+
+  - name: Install Docker on CentOS
+    yum:
+      name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == 'CentOS'
+
+  - name: Ensure docker users are added to the docker group.
+    user:
+      name: adgo
+      groups: docker
+      append: true
+
+  - name: Is Docker Started?
+    service:
+      name: docker
+      state: started
+
+  - name: Git repo adgo checkout
+    git:
+      repo: https://github.com/murielll/adgo-app.git
+      dest: /home/adgo/adgo-app
+    become: true
+    become_user: adgo
+
+  - name: Copy env file to remote servers
+    copy:
+      src: env
+      dest: "/home/adgo/adgo-app"
+      owner: adgo
+      group: adgo
+      mode: preserve
+
+  - name: Check if adgo_app container run
+    command: docker ps -q --filter name=adgo_app
+    register: adgo_run
+
+  - name: Start ADGO app
+    shell:
+      chdir: /home/adgo/adgo-app
+      cmd: ./start.sh
+    become: true
+    become_user: adgo
+    when: adgo_run.stdout == ""
+
+  - name: Restart ADGO app
+    shell:
+      chdir: /home/adgo/adgo-app
+      cmd: ./restart.sh
+    become: true
+    become_user: adgo
+    when: adgo_run.stdout != ""
