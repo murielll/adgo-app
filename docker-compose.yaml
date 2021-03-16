@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   backend:
-    image: grunby/adgo
+    image: grunby/adgo:uwsgi
     restart: always
     volumes:
       - logs-vol:/app/log
