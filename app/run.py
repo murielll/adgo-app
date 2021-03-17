@@ -14,16 +14,6 @@ from google.auth.transport.requests import Request
 import settings
 from utils import users_list_gen, write_to_log, get_err_msg
 
-# ####################### Get all LDAP exceptions #############################
-ldap_exception_list = list()
-for i in dir(ldap):
-    obj = getattr(ldap, i)
-    if isinstance(obj, type) and issubclass(obj, Exception):
-        ldap_exception_list.append(obj)
-
-ldap_exception_tuple = tuple(ldap_exception_list)
-del ldap_exception_list
-# #############################################################################
 
 app = Flask(__name__)
 
@@ -199,7 +189,16 @@ def active_directory():
     ad_srv.set_option(ldap.OPT_X_TLS_DEMAND, True)
     ad_srv.set_option(ldap.OPT_DEBUG_LEVEL, 255)
 
-    ad_srv.start_tls_s()
+    try:
+        ad_srv.start_tls_s()
+    except ldap.LDAPError as err:
+        msg = get_err_msg(err)
+        result.append(
+            'Failed to connect to LDAP server! Error message: %s.'
+            % msg
+        )
+        return '\n'.join(result)
+
     ad_srv.simple_bind_s(settings.AD_BIND_DN, settings.AD_ADMIN_PASS)
 
     for user in users:
@@ -227,7 +226,7 @@ def active_directory():
             ad_srv.add_s(user_dn, user_ldif)
             result.append('%s: User succefully created.' % user['adName'])
             write_to_log(user['email'], 'AD')
-        except ldap_exception_tuple as err:
+        except ldap.LDAPError as err:
             msg = get_err_msg(err)
             result.append(
                 '%s: Failed to create user! Error message: %s'
@@ -243,7 +242,7 @@ def active_directory():
             result.append(
               '%s: Password has changed succefully.' % user['adName']
             )
-        except ldap_exception_tuple as err:
+        except ldap.LDAPError as err:
             msg = get_err_msg(err)
             result.append(
                 '%s: Failed to change password! Error message: %s.'
@@ -258,7 +257,7 @@ def active_directory():
             result.append(
               '%s: user enabled succefully' % user['adName']
             )
-        except ldap_exception_tuple as err:
+        except ldap.LDAPError as err:
             msg = get_err_msg(err)
             result.append(
                 '%s: Failed to enable user! Error message: %s.'
@@ -275,7 +274,7 @@ def active_directory():
                   '%s: User succefully added to group %s.'
                   % (user['adName'], settings.AD_GROUP_NAME)
                 )
-            except ldap_exception_tuple as err:
+            except ldap.LDAPError as err:
                 msg = get_err_msg(err)
                 result.append(
                     '%s: Failed to add user to group %s! Error message: %s.'
