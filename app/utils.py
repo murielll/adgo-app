@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """ Some service functions for ADGO app """
 import os
-import json
 import datetime
+# import ldap
 from settings import LOG_FILE, GMAIL_DOMAIN, NAME_TPL, JOB_TPL
 
 
@@ -60,9 +60,20 @@ def write_to_log(email, event):
 
 def get_err_msg(err):
     """ Get error message from LDAP lib Exception message """
-    err = err.__str__() \
-             .replace("\'", "\"") \
-             .replace('\"\\n', '') \
-             .replace('\\n\\t\"', '')
-    msg = json.loads(err)['desc']
+
+    msg = err.args[0]['desc']
     return msg
+
+
+# ################## Get all LDAP exceptions (DEPRECATED) #####################
+# ldap_exception_list = list()
+# for i in dir(ldap):
+#     obj = getattr(ldap, i)
+#     if isinstance(obj, type) and issubclass(obj, Exception):
+#         ldap_exception_list.append(obj)
+#
+# ldap_exception_tuple = tuple(ldap_exception_list)
+# del ldap_exception_list
+# All ldap exceptions are childs of ldap.LDAPError and ldap_exception_tuple
+# not needed
+# ##############################(DEPRECATED)###################################
