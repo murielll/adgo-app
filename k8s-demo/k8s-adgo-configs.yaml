@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: adgo-secret
+  namespace: adgo-app
+  labels:
+      app: adgo
+type: Opaque
+data:
+  OKTA_API_TOKEN: BASE64_TOKEN
+  OKTA_USER_PASS: BASE64_PASS
+  GMAIL_USER_PASS: BASE64_PASS
+  AD_ADMIN_PASS: BASE64_PASS
+  AD_ADMIN_USER: BASE64_USER
+  AD_USER_PASS: BASE64_PASS
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adgo-configmap
+  namespace: adgo-app
+  labels:
+      app: adgo
+data:
+    NAME_TPL: name
+    JOB_TPL: job
+    OKTA_API_URL: 'https://company.okta.com/api/v1/users?activate=true&nextLogin=changePassword'
+    OKTA_USER_GROUP: PLAIN_TEXT_GROUP_ID
+    GMAIL_DOMAIN: company.com
+    GMAIL_CREDENTIALS: credentials.json
+    GMAIL_GROUP: users-group@company.com
+    GMAIL_ORG_UNIT_PATH: /Office1
+    AD_DOMAIN: company.local
+    AD_GROUP_DN: CN=SimpleUsers,CN=Groups,OU=Office-1,OU=MainOrganization,DC=office,DC=local
+    AD_USER_DN: CN=SimpleUsers,CN=Users,OU=Office-1,OU=MainOrganization,DC=office,DC=local

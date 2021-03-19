@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adgo-app-depl
+  namespace: adgo-app
+  labels:
+    app: adgo
+    env: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: adgo
+  template:
+    metadata:
+      labels:
+        app: adgo
+    spec:
+      containers:
+        - name: adgo-uwsgi
+          image: grunby/adgo:nginx
+          ports:
+            - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 2
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: adgo-configmap
+            - secretRef:
+                name: adgo-secret
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adgo-service
+  namespace: adgo-app
+  labels:
+    app: adgo
+spec:
+  selector:
+    app: adgo
+  type: ClusterIP
+  ports:
+    - name: adgo-uwsgi
+      protocol: TCP
+      port: 80
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-adgo-app
+  namespace: adgo-app
+  labels:
+    app: adgo
+spec:
+  rules:
+  - host: "adgo.lan"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: adgo-service
+            port:
+              number: 80
