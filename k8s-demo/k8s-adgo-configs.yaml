@@ -32,5 +32,5 @@ data:
     GMAIL_GROUP: users-group@company.com
     GMAIL_ORG_UNIT_PATH: /Office1
     AD_DOMAIN: company.local
-    AD_GROUP_DN: CN=SimpleUsers,CN=Groups,OU=Office-1,OU=MainOrganization,DC=office,DC=local
-    AD_USER_DN: CN=SimpleUsers,CN=Users,OU=Office-1,OU=MainOrganization,DC=office,DC=local
+    AD_GROUP_DN: CN=SimpleUsers,CN=Groups,OU=Office1,OU=MainOrganization,DC=company,DC=local
+    AD_USER_DN: CN=SimpleUsers,CN=Users,OU=Office1,OU=MainOrganization,DC=company,DC=local
