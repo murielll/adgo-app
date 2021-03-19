@@ -17,7 +17,7 @@ spec:
         app: adgo
     spec:
       containers:
-        - name: adgo-uwsgi
+        - name: adgo-nginx
           image: grunby/adgo:nginx
           ports:
             - containerPort: 80
