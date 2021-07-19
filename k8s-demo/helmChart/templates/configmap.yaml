@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: adgo-configmap
+  namespace: {{ .Values.namespace }}
+  labels:
+      app: adgo
+data:
+    NAME_TPL: {{ .Values.configmap.NAME_TPL }} 
+    JOB_TPL: {{ .Values.configmap.JOB_TPL }}
+    OKTA_API_URL: {{ .Values.configmap.OKTA_API_URL }}
+    OKTA_USER_GROUP: {{ .Values.configmap.OKTA_USER_GROUP }}
+    GMAIL_DOMAIN: {{ .Values.configmap.GMAIL_DOMAIN }}
+    GMAIL_CREDENTIALS: {{ .Values.configmap.GMAIL_CREDENTIALS }}
+    GMAIL_GROUP: {{ .Values.configmap.GMAIL_GROUP }}
+    GMAIL_ORG_UNIT_PATH: {{ .Values.configmap.GMAIL_ORG_UNIT_PATH }}
+    AD_DOMAIN: {{ .Values.configmap.AD_DOMAIN }}
+    AD_GROUP_DN: {{ .Values.configmap.AD_GROUP_DN }}
+    AD_USER_DN: {{ .Values.configmap.AD_USER_DN }}
+

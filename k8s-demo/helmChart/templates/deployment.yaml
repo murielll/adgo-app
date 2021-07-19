@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: adgo
+    env: dev
+spec:
+  replicas: {{ .Values.container.replicaCount }}
+  selector:
+    matchLabels:
+      app: adgo
+  template:
+    metadata:
+      labels:
+        app: adgo
+    spec:
+      containers:
+        - name: adgo-nginx
+          image: {{ .Values.container.image }}
+          ports:
+            - containerPort: 80
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            failureThreshold: 2
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            periodSeconds: 5
+          envFrom:
+            - configMapRef:
+                name: adgo-configmap
+            - secretRef:
+                name: adgo-secret
+
+

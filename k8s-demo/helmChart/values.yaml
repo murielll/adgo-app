@@ -1,0 +1,34 @@
+namespace: adgo-app
+   
+deployment:
+    name: adgo-app-1
+
+container:
+    image: grunby/adgo:nginx
+    replicaCount: 1
+
+ingress:
+    host: "adgo.lan"
+    path: "/"
+
+configmap:
+    NAME_TPL: name
+    JOB_TPL: job
+    OKTA_API_URL: 'https://company.okta.com/api/v1/users?activate=true&nextLogin=changePassword'
+    OKTA_USER_GROUP: dGVtcAo
+    GMAIL_DOMAIN: company.com
+    GMAIL_CREDENTIALS: credentials.json
+    GMAIL_GROUP: users-group@company.com
+    GMAIL_ORG_UNIT_PATH: /Office1
+    AD_DOMAIN: company.local
+    AD_GROUP_DN: CN=SimpleUsers,CN=Groups,OU=Office1,OU=MainOrganization,DC=company,DC=local
+    AD_USER_DN: CN=SimpleUsers,CN=Users,OU=Office1,OU=MainOrganization,DC=company,DC=local
+
+secret:
+    OKTA_API_TOKEN: dGVtcAo=
+    OKTA_USER_PASS: dGVtcAo=
+    GMAIL_USER_PASS: dGVtcAo=
+    AD_ADMIN_PASS: dGVtcAo=
+    AD_ADMIN_USER: dGVtcAo=
+    AD_USER_PASS: dGVtcAo=
+

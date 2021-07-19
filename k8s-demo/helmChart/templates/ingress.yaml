@@ -1,0 +1,21 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-adgo-app
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: adgo
+spec:
+  rules:
+  - host: {{ .Values.ingress.host }} 
+    http:
+      paths:
+      - pathType: Prefix
+        path:  {{ .Values.ingress.path }}
+        backend:
+          service:
+            name: adgo-service
+            port:
+              number: 80
+
